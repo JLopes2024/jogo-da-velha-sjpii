@@ -1,286 +1,217 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
-// Tabuleiro inicial: 9 posições vazias
-const initialBoard = Array(9).fill(null);
-
-function App() {
-  // Estado do tabuleiro
-  const [board, setBoard] = useState(initialBoard);
-  // Indica se é a vez do jogador
-  const [isPlayerTurn, setIsPlayerTurn] = useState(true);
-  // Guarda o vencedor ou empate
+export default function JogoDaVelha() {
+  const [board, setBoard] = useState(Array(9).fill(null));
+  const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState(null);
-  // Nível do bot: 'bispo', 'papa' ou 'santo'
-  const [level, setLevel] = useState('bispo'); 
-  // Mensagem dinâmica do bot
-  const [botMessage, setBotMessage] = useState('Olá! Escolha o nível e vamos jogar!');
+  const [level, setLevel] = useState("facil");
+  const [supremeUnlocked, setSupremeUnlocked] = useState(false); // nível secreto
+  const [supremeTries, setSupremeTries] = useState(3); // tentativas restantes
 
-  // useEffect para disparar a jogada do bot quando for a vez dele
-  useEffect(() => {
-    if (!isPlayerTurn && !winner) {
-      const timer = setTimeout(() => {
-        botMove();
-      }, 500); // Delay para simular "pensamento"
-      return () => clearTimeout(timer);
-    }
-  }, [isPlayerTurn, winner, level]);
-
-  // Função principal do bot
-  const botMove = () => {
-    const newBoard = board.slice();
-    let bestMove;
-
-    if (level === 'bispo') {
-      // -------------------
-      // Nível Bispo: agora mais difícil
-      // Ele tenta bloquear o jogador ou criar vitória simples
-      // -------------------
-      bestMove = getSafeMove(newBoard); // função que escolhe movimento "semi-inteligente"
-      setBotMessage(randomMessage('bispo'));
-    } else if (level === 'papa') {
-      // -------------------
-      // Nível Papa: mistura Minimax e aleatório
-      // -------------------
-      if (Math.random() < 0.5) {
-        bestMove = getBestMove(newBoard);
-        setBotMessage(randomMessage('papaSmart'));
-      } else {
-        const emptyCells = board.map((c,i) => c===null?i:null).filter(i=>i!==null);
-        bestMove = emptyCells[Math.floor(Math.random()*emptyCells.length)];
-        setBotMessage(randomMessage('papa'));
-      }
-    } else {
-      // -------------------
-      // Nível Santo: Minimax completo (difícil)
-      // -------------------
-      bestMove = getBestMove(newBoard);
-      setBotMessage(randomMessage('santo'));
-    }
-
-    // Marca a jogada do bot
-    newBoard[bestMove] = 'X';
-    setBoard(newBoard);
-    checkWinner(newBoard);
-    setIsPlayerTurn(true);
-  };
-
-  // -------------------
-  // Jogador clica em uma célula
-  // -------------------
-  const handleClick = (index) => {
-    if (board[index] || !isPlayerTurn || winner) return;
-
-    const newBoard = board.slice();
-    newBoard[index] = 'O'; // jogador é 'O'
-    setBoard(newBoard);
-    checkWinner(newBoard);
-    setIsPlayerTurn(false);
-  };
-
-  // -------------------
-  // Checa vitória ou empate
-  // -------------------
-  const checkWinner = (b) => {
+  // 🧠 Função para verificar vencedor
+  const calculateWinner = (squares) => {
     const lines = [
-      [0,1,2],[3,4,5],[6,7,8],
-      [0,3,6],[1,4,7],[2,5,8],
-      [0,4,8],[2,4,6]
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
     ];
-
-    for (let [a,bIndex,c] of lines) {
-      if (b[a] && b[a] === b[bIndex] && b[a] === b[c]) {
-        setWinner(b[a] === 'O' ? 'Você ganhou!' : 'São João Paulo II ganhou!');
-        setBotMessage(b[a] === 'X' ? 'Haha, sabia que venceria!' : 'Não desanime, jovem!');
-        return;
+    for (let [a, b, c] of lines) {
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return squares[a];
       }
     }
-
-    // Se não houver posições vazias → empate
-    if (!b.includes(null)) {
-      setWinner('Empate!');
-      setBotMessage('Empate! Somos igualmente sábios hoje.');
-    }
+    return null;
   };
 
-  // -------------------
-  // Reinicia o jogo
-  // -------------------
-  const resetGame = () => {
-    setBoard(initialBoard);
+  // 🧹 Reinicia o tabuleiro
+  const resetBoard = () => {
+    setBoard(Array(9).fill(null));
     setWinner(null);
-    setIsPlayerTurn(true);
-    setBotMessage('Vamos jogar novamente! Escolha o nível.');
+    setIsXNext(true);
   };
 
-  // ==================== BOT INTELIGENTE (Minimax) ====================
-
-  // Minimax completo usado para Papa (50%) e Santo
-  const getBestMove = (board) => {
-    let bestScore = -Infinity;
-    let move;
-    const emptyCells = board.map((cell, i) => cell === null ? i : null).filter(i => i !== null);
-
-    emptyCells.forEach(i => {
-      board[i] = 'X';
-      const score = minimax(board, false);
-      board[i] = null;
-      if (score > bestScore) {
-        bestScore = score;
-        move = i;
-      }
-    });
-
-    return move;
+  // 🕹️ Clique do jogador
+  const handleClick = (index) => {
+    if (winner || board[index]) return;
+    const newBoard = [...board];
+    newBoard[index] = isXNext ? "X" : "O";
+    setBoard(newBoard);
+    setIsXNext(!isXNext);
   };
 
-  const minimax = (board, isMaximizing) => {
-    const result = evaluate(board);
-    if (result !== null) return result;
+  // 🤖 Movimento do bot (cada nível com estratégia diferente)
+  const botMove = (newBoard) => {
+    const emptyCells = newBoard
+      .map((cell, i) => (cell === null ? i : null))
+      .filter((i) => i !== null);
+    if (emptyCells.length === 0) return;
 
-    const emptyCells = board.map((cell, i) => cell === null ? i : null).filter(i => i !== null);
+    let move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
 
-    if (isMaximizing) {
-      let bestScore = -Infinity;
+    // Médio → tenta vencer
+    if (level === "medio") {
       for (let i of emptyCells) {
-        board[i] = 'X';
-        bestScore = Math.max(bestScore, minimax(board, false));
-        board[i] = null;
+        const copy = [...newBoard];
+        copy[i] = "O";
+        if (calculateWinner(copy) === "O") {
+          move = i;
+          break;
+        }
       }
-      return bestScore;
-    } else {
-      let bestScore = Infinity;
+    }
+
+    // Difícil → bloqueia e vence
+    if (level === "dificil" || level === "supremo") {
+      // tenta vencer
       for (let i of emptyCells) {
-        board[i] = 'O';
-        bestScore = Math.min(bestScore, minimax(board, true));
-        board[i] = null;
+        const copy = [...newBoard];
+        copy[i] = "O";
+        if (calculateWinner(copy) === "O") {
+          move = i;
+          break;
+        }
       }
-      return bestScore;
-    }
-  };
 
-  // Avalia vitória (-10 derrota, 10 vitória, 0 empate)
-  const evaluate = (board) => {
-    const lines = [
-      [0,1,2],[3,4,5],[6,7,8],
-      [0,3,6],[1,4,7],[2,5,8],
-      [0,4,8],[2,4,6]
-    ];
-
-    for (let [a,b,c] of lines) {
-      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return board[a] === 'X' ? 10 : -10;
+      // tenta bloquear o jogador
+      for (let i of emptyCells) {
+        const copy = [...newBoard];
+        copy[i] = "X";
+        if (calculateWinner(copy) === "X") {
+          move = i;
+          break;
+        }
       }
-    }
 
-    if (!board.includes(null)) return 0; // empate
-    return null;
-  };
+      // Supremo → joga quase perfeito
+      if (level === "supremo") {
+        const priority = [4, 0, 2, 6, 8, 1, 3, 5, 7];
+        for (let i of priority) {
+          if (emptyCells.includes(i)) {
+            move = i;
+            break;
+          }
+        }
 
-  // ==================== FUNÇÃO PARA BISPO MAIS DIFÍCIL ====================
-  // Escolhe primeiro movimento inteligente: bloqueia jogador ou faz linha com 2 'X'
-  const getSafeMove = (board) => {
-    // Checa se pode vencer na próxima jogada
-    const winMove = findWinningMove(board, 'X');
-    if (winMove !== null) return winMove;
-
-    // Checa se precisa bloquear o jogador
-    const blockMove = findWinningMove(board, 'O');
-    if (blockMove !== null) return blockMove;
-
-    // Caso contrário, escolhe aleatório
-    const emptyCells = board.map((c,i) => c===null?i:null).filter(i=>i!==null);
-    return emptyCells[Math.floor(Math.random()*emptyCells.length)];
-  };
-
-  // Função auxiliar para checar vitória na próxima jogada
-  const findWinningMove = (b, player) => {
-    const lines = [
-      [0,1,2],[3,4,5],[6,7,8],
-      [0,3,6],[1,4,7],[2,5,8],
-      [0,4,8],[2,4,6]
-    ];
-
-    for (let [a,bIndex,c] of lines) {
-      const line = [b[a], b[bIndex], b[c]];
-      if (line.filter(x=>x===player).length===2 && line.includes(null)) {
-        return [a,bIndex,c][line.indexOf(null)];
+        // chance mínima de erro (5%)
+        if (Math.random() < 0.05) {
+          move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
       }
     }
-    return null;
+
+    newBoard[move] = "O";
+    setBoard(newBoard);
+    setIsXNext(true);
   };
 
-  // ==================== MENSAGENS ENGRAÇADAS DO BOT ====================
+  // 🧩 Efeito principal (checagem de vencedor + bot)
+  useEffect(() => {
+    const win = calculateWinner(board);
 
-  const randomMessage = (type) => {
-    const messages = {
-      bispo: [
-        'Hm, isso vai ser divertido!',
-        'Estou apenas começando...',
-        'Você pode vencer, mas não será fácil!'
-      ],
-      papa: [
-        'Hmm, estou refletindo...',
-        'Vamos ver se consigo essa vitória!',
-        'Não subestime um Papa!'
-      ],
-      papaSmart: [
-        'O jogo está ficando interessante...',
-        'Preciso pensar um pouco mais...',
-        'Que movimento sábio eu farei agora?'
-      ],
-      santo: [
-        'Santo ou sábio, o caminho da vitória é claro!',
-        'Minhas estratégias são divinas!',
-        'Prepare-se para o desafio máximo!'
-      ]
-    };
+    if (win) {
+      setWinner(win);
 
-    const arr = messages[type] || ['...'];
-    return arr[Math.floor(Math.random() * arr.length)];
+      // ✅ Se o jogador vence no modo "Santo", desbloqueia o Supremo
+      if (win === "X" && level === "dificil") {
+        setSupremeUnlocked(true);
+        setSupremeTries(3);
+      }
+
+      // ❌ Se o jogador perde no modo Supremo, conta tentativa
+      if ((win === "O" || win === "Empate") && level === "supremo") {
+        setSupremeTries((prev) => prev - 1);
+      }
+    } else if (!board.includes(null)) {
+      setWinner("Empate");
+
+      // Empate também conta como falha no Supremo
+      if (level === "supremo") {
+        setSupremeTries((prev) => prev - 1);
+      }
+    } else if (!isXNext) {
+      setTimeout(() => botMove([...board]), 500);
+    }
+  }, [board, isXNext]);
+
+  // 🧨 Remove o modo Supremo se as tentativas acabarem
+  useEffect(() => {
+    if (supremeTries <= 0 && supremeUnlocked && level === "supremo") {
+      alert("Nossa Senhora se despediu! 🌹");
+      setSupremeUnlocked(false);
+      setLevel("facil");
+      resetBoard();
+    }
+  }, [supremeTries]);
+
+  // 🔁 Trocar o nível → zera tabuleiro
+  const handleLevelChange = (e) => {
+    setLevel(e.target.value);
+    resetBoard();
   };
-
-  // ==================================================================
 
   return (
     <div className="container">
-      <h1>Jogo da Velha - Contra São João Paulo II</h1>
+      <h1>Jogo da Velha - São João Paulo II</h1>
 
-      {/* Mensagem do bot */}
-      <div className="bot-message">{botMessage}</div>
-
-      {/* Seleção de nível */}
-      <div className="level-selector">
-        <label>Escolha o nível: </label>
-        <select value={level} onChange={(e) => setLevel(e.target.value)}>
-          <option value="bispo">Bispo (Fácil, agora mais esperto)</option>
-          <option value="papa">Papa (Médio)</option>
-          <option value="santo">Santo (Difícil)</option>
-        </select>
+      <div className="bot-message">
+        {winner
+          ? winner === "Empate"
+            ? "Empate! 😅"
+            : `Vitória de ${winner}! 🎉`
+          : isXNext
+          ? "Sua vez!"
+          : level === "supremo"
+          ? "Nossa Senhora está guiando os passos... 🙏"
+          : "Turno do São João Paulo II 🤖"}
       </div>
 
-      {/* Tabuleiro */}
+      <div className="level-selector">
+        <label htmlFor="level">Escolha o nível:</label>
+        <select id="level" value={level} onChange={handleLevelChange}>
+          <option value="facil">Bispo</option>
+          <option value="medio">Papa</option>
+          <option value="dificil">Santo</option>
+          {supremeUnlocked && <option value="supremo">Nossa Senhora 🌟</option>}
+        </select>
+
+        {level === "supremo" && (
+          <p style={{ color: "#ff00ff", marginTop: "8px", fontSize: "0.7rem" }}>
+            Tentativas restantes: {supremeTries}
+          </p>
+        )}
+      </div>
+
       <div className="board">
         {board.map((cell, index) => (
-          <div 
-            key={index} 
-            className="cell" 
-            onClick={() => handleClick(index)}
-          >
+          <div key={index} className="cell" onClick={() => handleClick(index)}>
             {cell}
           </div>
         ))}
       </div>
 
-      {/* Mensagem de vitória/empate */}
       {winner && (
         <div className="winner">
-          <h2>{winner}</h2>
-          <button onClick={resetGame}>Reiniciar</button>
+          <h2>
+            {winner === "Empate"
+              ? "Empate!"
+              : `${winner} venceu o jogo!`}
+          </h2>
+          <button onClick={resetBoard}>Jogar novamente</button>
         </div>
+      )}
+
+      {supremeUnlocked && level !== "supremo" && (
+        <p style={{ color: "#9c27b0", marginTop: "15px", fontSize: "0.8rem" }}>
+          🌟 Você desbloqueou o nível Supremo!  
+          Escolha “Nossa Senhora” e teste sua fé 😇
+        </p>
       )}
     </div>
   );
 }
-
-export default App;

@@ -1,12 +1,10 @@
-/* Reset básico */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Press Start 2P', cursive; /* Fonte retrô estilo arcade */
+  font-family: 'Press Start 2P', cursive;
 }
 
-/* Container principal */
 .container {
   min-height: 100vh;
   display: flex;
@@ -14,32 +12,28 @@
   align-items: center;
   justify-content: flex-start;
   padding: 20px;
-  background: radial-gradient(circle at top, #0d0d0d, #1a1a1a);
-  color: #ffffff;
+  background: radial-gradient(circle at top, #0c0010, #0a0012);
+  color: #e0e0e0;
 }
 
-/* Título */
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   margin-bottom: 20px;
-  color: #00ffea;
-  text-shadow: 2px 2px #ff00ff;
+  color: #7fff00;
   text-align: center;
 }
 
-/* Mensagem do bot */
 .bot-message {
-  background-color: rgba(0, 255, 234, 0.1);
-  color: #00ffea;
+  background-color: rgba(127, 255, 0, 0.1);
+  color: #b300ff;
   padding: 10px 15px;
-  border: 2px solid #00ffea;
+  border: 2px solid #7fff00;
   border-radius: 8px;
   margin-bottom: 15px;
   text-align: center;
   min-width: 250px;
 }
 
-/* Seleção de nível */
 .level-selector {
   margin-bottom: 20px;
   display: flex;
@@ -50,20 +44,19 @@ h1 {
 .level-selector label {
   margin-bottom: 5px;
   font-size: 0.8rem;
-  color: #ff00ff;
+  color: #7fff00;
 }
 
 .level-selector select {
   padding: 8px 12px;
   border-radius: 6px;
-  border: 2px solid #ff00ff;
-  background: #1a1a1a;
+  border: 2px solid #b300ff;
+  background: #1a001f;
   color: #ffffff;
   font-family: 'Press Start 2P', cursive;
   cursor: pointer;
 }
 
-/* Tabuleiro */
 .board {
   display: grid;
   grid-template-columns: repeat(3, 80px);
@@ -80,7 +73,6 @@ h1 {
   }
 }
 
-/* Cada célula */
 .cell {
   display: flex;
   align-items: center;
@@ -88,20 +80,18 @@ h1 {
   font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
-  border: 2px solid #00ffea;
+  border: 2px solid #7fff00;
   border-radius: 8px;
-  background: linear-gradient(145deg, #111111, #222222);
+  background: #14001a;
+  color: #b300ff;
   transition: transform 0.1s, background 0.2s;
-  color: #00ffea;
-  text-shadow: 1px 1px #ff00ff;
 }
 
 .cell:hover {
-  transform: scale(1.1);
-  background: linear-gradient(145deg, #222222, #333333);
+  transform: scale(1.05);
+  background: #21002a;
 }
 
-/* Mensagem de vitória/empate */
 .winner {
   text-align: center;
   margin-top: 10px;
@@ -109,29 +99,39 @@ h1 {
 
 .winner h2 {
   font-size: 1rem;
-  color: #ff00ff;
-  text-shadow: 2px 2px #00ffea;
+  color: #b300ff;
   margin-bottom: 10px;
 }
 
 .winner button {
   padding: 10px 20px;
   font-family: 'Press Start 2P', cursive;
-  background: #0d0d0d;
-  color: #00ffea;
-  border: 2px solid #00ffea;
+  background: #0c0010;
+  color: #7fff00;
+  border: 2px solid #7fff00;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .winner button:hover {
-  background: #00ffea;
-  color: #0d0d0d;
-  box-shadow: 0 0 10px #00ffea;
+  background: #7fff00;
+  color: #0c0010;
+}
+.unlock-button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border: 2px solid #b300ff;
+  background-color: #0c0010;
+  color: #7fff00;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Press Start 2P', cursive;
+  transition: all 0.3s;
 }
 
-/* Pequenos detalhes retrô neon */
-body {
-  background: radial-gradient(circle, #0d0d0d 0%, #000000 100%);
+.unlock-button:hover {
+  background-color: #7fff00;
+  color: #0c0010;
+  transform: scale(1.05);
 }
