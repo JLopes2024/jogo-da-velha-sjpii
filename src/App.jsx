@@ -3,13 +3,11 @@ import "./App.css";
 
 export default function JogoDaVelha() {
   const [board, setBoard] = useState(Array(9).fill(null));
-  const [isXNext, setIsXNext] = useState(true);
+  const [isXNext, setIsXNext] = useState(true); // true = jogador (X) pode jogar
   const [winner, setWinner] = useState(null);
-  const [level, setLevel] = useState("facil");
-  const [supremeUnlocked, setSupremeUnlocked] = useState(false); // nível secreto
-  const [supremeTries, setSupremeTries] = useState(3); // tentativas restantes
+  const [level, setLevel] = useState("facil"); // 'facil' | 'medio' | 'dificil'
 
-  // 🧠 Função para verificar vencedor
+  // verifica vencedor
   const calculateWinner = (squares) => {
     const lines = [
       [0, 1, 2],
@@ -29,32 +27,33 @@ export default function JogoDaVelha() {
     return null;
   };
 
-  // 🧹 Reinicia o tabuleiro
+  // limpa tabuleiro
   const resetBoard = () => {
     setBoard(Array(9).fill(null));
     setWinner(null);
     setIsXNext(true);
   };
 
-  // 🕹️ Clique do jogador
+  // clique do jogador (X)
   const handleClick = (index) => {
-    if (winner || board[index]) return;
+    if (winner || board[index] || !isXNext) return;
     const newBoard = [...board];
-    newBoard[index] = isXNext ? "X" : "O";
+    newBoard[index] = "X";
     setBoard(newBoard);
-    setIsXNext(!isXNext);
+    setIsXNext(false);
   };
 
-  // 🤖 Movimento do bot (cada nível com estratégia diferente)
+  // lógica do bot (O) por nível
   const botMove = (newBoard) => {
     const emptyCells = newBoard
       .map((cell, i) => (cell === null ? i : null))
       .filter((i) => i !== null);
     if (emptyCells.length === 0) return;
 
+    // start with random move
     let move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
 
-    // Médio → tenta vencer
+    // MÉDIO: tenta vencer se possível
     if (level === "medio") {
       for (let i of emptyCells) {
         const copy = [...newBoard];
@@ -66,8 +65,8 @@ export default function JogoDaVelha() {
       }
     }
 
-    // Difícil → bloqueia e vence
-    if (level === "dificil" || level === "supremo") {
+    // DIFÍCIL: tenta vencer, depois bloquear
+    if (level === "dificil") {
       // tenta vencer
       for (let i of emptyCells) {
         const copy = [...newBoard];
@@ -78,7 +77,7 @@ export default function JogoDaVelha() {
         }
       }
 
-      // tenta bloquear o jogador
+      // tenta bloquear X
       for (let i of emptyCells) {
         const copy = [...newBoard];
         copy[i] = "X";
@@ -88,20 +87,18 @@ export default function JogoDaVelha() {
         }
       }
 
-      // Supremo → joga quase perfeito
-      if (level === "supremo") {
-        const priority = [4, 0, 2, 6, 8, 1, 3, 5, 7];
-        for (let i of priority) {
-          if (emptyCells.includes(i)) {
-            move = i;
-            break;
-          }
+      // prioridade: centro, cantos, laterais
+      const priority = [4, 0, 2, 6, 8, 1, 3, 5, 7];
+      for (let p of priority) {
+        if (emptyCells.includes(p)) {
+          move = p;
+          break;
         }
+      }
 
-        // chance mínima de erro (5%)
-        if (Math.random() < 0.05) {
-          move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-        }
+      // mantém uma chance ínfima de erro (1%) para não ser 100% previsível
+      if (Math.random() < 0.01) {
+        move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
       }
     }
 
@@ -110,46 +107,26 @@ export default function JogoDaVelha() {
     setIsXNext(true);
   };
 
-  // 🧩 Efeito principal (checagem de vencedor + bot)
+  // efeito principal: verifica vencedor e dispara jogada do bot quando necessário
   useEffect(() => {
     const win = calculateWinner(board);
 
     if (win) {
       setWinner(win);
-
-      // ✅ Se o jogador vence no modo "Santo", desbloqueia o Supremo
-      if (win === "X" && level === "dificil") {
-        setSupremeUnlocked(true);
-        setSupremeTries(3);
-      }
-
-      // ❌ Se o jogador perde no modo Supremo, conta tentativa
-      if ((win === "O" || win === "Empate") && level === "supremo") {
-        setSupremeTries((prev) => prev - 1);
-      }
     } else if (!board.includes(null)) {
       setWinner("Empate");
-
-      // Empate também conta como falha no Supremo
-      if (level === "supremo") {
-        setSupremeTries((prev) => prev - 1);
+    } else {
+      // se for a vez do bot (isXNext === false), ele joga
+      if (!isXNext) {
+        const timer = setTimeout(() => {
+          botMove([...board]);
+        }, 450); // delay para parecer natural
+        return () => clearTimeout(timer);
       }
-    } else if (!isXNext) {
-      setTimeout(() => botMove([...board]), 500);
     }
-  }, [board, isXNext]);
+  }, [board, isXNext, level]);
 
-  // 🧨 Remove o modo Supremo se as tentativas acabarem
-  useEffect(() => {
-    if (supremeTries <= 0 && supremeUnlocked && level === "supremo") {
-      alert("Nossa Senhora se despediu! 🌹");
-      setSupremeUnlocked(false);
-      setLevel("facil");
-      resetBoard();
-    }
-  }, [supremeTries]);
-
-  // 🔁 Trocar o nível → zera tabuleiro
+  // trocar nível zera o tabuleiro
   const handleLevelChange = (e) => {
     setLevel(e.target.value);
     resetBoard();
@@ -166,8 +143,6 @@ export default function JogoDaVelha() {
             : `Vitória de ${winner}! 🎉`
           : isXNext
           ? "Sua vez!"
-          : level === "supremo"
-          ? "Nossa Senhora está guiando os passos... 🙏"
           : "Turno do São João Paulo II 🤖"}
       </div>
 
@@ -177,40 +152,29 @@ export default function JogoDaVelha() {
           <option value="facil">Bispo</option>
           <option value="medio">Papa</option>
           <option value="dificil">Santo</option>
-          {supremeUnlocked && <option value="supremo">Nossa Senhora 🌟</option>}
         </select>
-
-        {level === "supremo" && (
-          <p style={{ color: "#ff00ff", marginTop: "8px", fontSize: "0.7rem" }}>
-            Tentativas restantes: {supremeTries}
-          </p>
-        )}
       </div>
 
-      <div className="board">
+      <div className="board" role="grid" aria-label="tabuleiro jogo da velha">
         {board.map((cell, index) => (
-          <div key={index} className="cell" onClick={() => handleClick(index)}>
+          <button
+            key={index}
+            className="cell"
+            onClick={() => handleClick(index)}
+            aria-label={`célula ${index}`}
+          >
             {cell}
-          </div>
+          </button>
         ))}
       </div>
 
       {winner && (
         <div className="winner">
-          <h2>
-            {winner === "Empate"
-              ? "Empate!"
-              : `${winner} venceu o jogo!`}
-          </h2>
-          <button onClick={resetBoard}>Jogar novamente</button>
+          <h2>{winner === "Empate" ? "Empate!" : `${winner} venceu o jogo!`}</h2>
+          <button className="reset-btn" onClick={resetBoard}>
+            Jogar novamente
+          </button>
         </div>
-      )}
-
-      {supremeUnlocked && level !== "supremo" && (
-        <p style={{ color: "#9c27b0", marginTop: "15px", fontSize: "0.8rem" }}>
-          🌟 Você desbloqueou o nível Supremo!  
-          Escolha “Nossa Senhora” e teste sua fé 😇
-        </p>
       )}
     </div>
   );
