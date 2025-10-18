@@ -3,11 +3,11 @@ import "./App.css";
 
 export default function JogoDaVelha() {
   const [board, setBoard] = useState(Array(9).fill(null));
-  const [isXNext, setIsXNext] = useState(true); // true = jogador (X) pode jogar
+  const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState(null);
-  const [level, setLevel] = useState("facil"); // 'facil' | 'medio' | 'dificil'
+  const [level, setLevel] = useState("facil");
 
-  // verifica vencedor
+  // Função para verificar vencedor
   const calculateWinner = (squares) => {
     const lines = [
       [0, 1, 2],
@@ -27,33 +27,35 @@ export default function JogoDaVelha() {
     return null;
   };
 
-  // limpa tabuleiro
+  // Função de reset geral do tabuleiro
   const resetBoard = () => {
     setBoard(Array(9).fill(null));
     setWinner(null);
     setIsXNext(true);
   };
 
-  // clique do jogador (X)
+  // Quando o jogador clica em uma célula
   const handleClick = (index) => {
-    if (winner || board[index] || !isXNext) return;
+    if (winner || board[index]) return;
+
     const newBoard = [...board];
-    newBoard[index] = "X";
+    newBoard[index] = isXNext ? "X" : "O";
     setBoard(newBoard);
-    setIsXNext(false);
+    setIsXNext(!isXNext);
   };
 
-  // lógica do bot (O) por nível
+  // Função para o bot jogar
   const botMove = (newBoard) => {
     const emptyCells = newBoard
       .map((cell, i) => (cell === null ? i : null))
       .filter((i) => i !== null);
+
     if (emptyCells.length === 0) return;
 
-    // start with random move
+    // Nível fácil = aleatório
     let move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
 
-    // MÉDIO: tenta vencer se possível
+    // Nível médio = tenta vencer se possível
     if (level === "medio") {
       for (let i of emptyCells) {
         const copy = [...newBoard];
@@ -65,19 +67,8 @@ export default function JogoDaVelha() {
       }
     }
 
-    // DIFÍCIL: tenta vencer, depois bloquear
+    // Nível difícil = tenta bloquear jogador X
     if (level === "dificil") {
-      // tenta vencer
-      for (let i of emptyCells) {
-        const copy = [...newBoard];
-        copy[i] = "O";
-        if (calculateWinner(copy) === "O") {
-          move = i;
-          break;
-        }
-      }
-
-      // tenta bloquear X
       for (let i of emptyCells) {
         const copy = [...newBoard];
         copy[i] = "X";
@@ -86,20 +77,6 @@ export default function JogoDaVelha() {
           break;
         }
       }
-
-      // prioridade: centro, cantos, laterais
-      const priority = [4, 0, 2, 6, 8, 1, 3, 5, 7];
-      for (let p of priority) {
-        if (emptyCells.includes(p)) {
-          move = p;
-          break;
-        }
-      }
-
-      // mantém uma chance ínfima de erro (1%) para não ser 100% previsível
-      if (Math.random() < 0.01) {
-        move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      }
     }
 
     newBoard[move] = "O";
@@ -107,26 +84,19 @@ export default function JogoDaVelha() {
     setIsXNext(true);
   };
 
-  // efeito principal: verifica vencedor e dispara jogada do bot quando necessário
+  // Quando há mudança no tabuleiro, verifica o vencedor
   useEffect(() => {
     const win = calculateWinner(board);
-
     if (win) {
       setWinner(win);
     } else if (!board.includes(null)) {
       setWinner("Empate");
-    } else {
-      // se for a vez do bot (isXNext === false), ele joga
-      if (!isXNext) {
-        const timer = setTimeout(() => {
-          botMove([...board]);
-        }, 450); // delay para parecer natural
-        return () => clearTimeout(timer);
-      }
+    } else if (!isXNext) {
+      setTimeout(() => botMove([...board]), 400);
     }
-  }, [board, isXNext, level]);
+  }, [board, isXNext]);
 
-  // trocar nível zera o tabuleiro
+  // Quando o nível muda, reseta o tabuleiro
   const handleLevelChange = (e) => {
     setLevel(e.target.value);
     resetBoard();
@@ -149,31 +119,28 @@ export default function JogoDaVelha() {
       <div className="level-selector">
         <label htmlFor="level">Escolha o nível:</label>
         <select id="level" value={level} onChange={handleLevelChange}>
-          <option value="facil">Bispo</option>
-          <option value="medio">Papa</option>
-          <option value="dificil">Santo</option>
+          <option value="facil">Fácil</option>
+          <option value="medio">Médio</option>
+          <option value="dificil">Difícil</option>
         </select>
       </div>
 
-      <div className="board" role="grid" aria-label="tabuleiro jogo da velha">
+      <div className="board">
         {board.map((cell, index) => (
-          <button
-            key={index}
-            className="cell"
-            onClick={() => handleClick(index)}
-            aria-label={`célula ${index}`}
-          >
+          <div key={index} className="cell" onClick={() => handleClick(index)}>
             {cell}
-          </button>
+          </div>
         ))}
       </div>
 
       {winner && (
         <div className="winner">
-          <h2>{winner === "Empate" ? "Empate!" : `${winner} venceu o jogo!`}</h2>
-          <button className="reset-btn" onClick={resetBoard}>
-            Jogar novamente
-          </button>
+          <h2>
+            {winner === "Empate"
+              ? "Empate!"
+              : `${winner} venceu o jogo!`}
+          </h2>
+          <button onClick={resetBoard}>Jogar novamente</button>
         </div>
       )}
     </div>
