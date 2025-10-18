@@ -6,17 +6,23 @@
   font-family: 'Press Start 2P', cursive; /* Fonte retrô estilo arcade */
 }
 
-/* Container principal
-   -> agora centraliza vertical e horizontalmente por padrão */
+/* Container principal */
 .container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;      /* centraliza horizontal */
-  justify-content: center;  /* centraliza vertical (troque para flex-start se preferir topo) */
+  align-items: center;
+  justify-content: flex-start; /* padrão: conteúdo no topo */
   padding: 20px;
   background: radial-gradient(circle at top, #1B0033, #0f001a);
   color: #740000;
+}
+
+/* Centraliza verticalmente em celulares */
+@media (max-width: 600px) {
+  .container {
+    justify-content: center; /* Centraliza verticalmente no mobile */
+  }
 }
 
 /* Título */
@@ -27,8 +33,7 @@ h1 {
   text-align: center;
 }
 
-/* Mensagem do bot
-   -> largura fluida para não empurrar o layout */
+/* Mensagem do bot */
 .bot-message {
   background-color: rgba(94, 255, 178, 0.08);
   color: #B8FF5E;
@@ -37,7 +42,7 @@ h1 {
   border-radius: 8px;
   margin-bottom: 12px;
   text-align: center;
-  width: min(420px, 94%);   /* fica responsivo e centralizado */
+  width: min(420px, 94%);
   max-width: 100%;
   word-wrap: break-word;
 }
@@ -72,25 +77,23 @@ h1 {
   max-width: 320px;
 }
 
-/* Tabuleiro
-   -> usa largura fluida, colunas fr para manter quadrado via aspect-ratio */
+/* Tabuleiro */
 .board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  width: min(360px, 94vw);   /* controla tamanho do tabuleiro na tela */
+  width: min(360px, 94vw);
   max-width: 100%;
   margin-bottom: 16px;
 }
 
-/* Cada célula
-   -> aspect-ratio garante quadrado; font-size escalável */
+/* Cada célula */
 .cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1 / 1;               /* mantém quadrado */
-  font-size: clamp(1rem, 2.6vw, 1.6rem); /* escalável em telas pequenas/grandes */
+  aspect-ratio: 1 / 1;
+  font-size: clamp(1rem, 2.6vw, 1.6rem);
   font-weight: bold;
   cursor: pointer;
   border: 2px solid #5B2EFF;
@@ -101,7 +104,6 @@ h1 {
   user-select: none;
 }
 
-/* toque/press */
 .cell:active {
   transform: scale(0.98);
   background: #05a005;
@@ -144,7 +146,7 @@ h1 {
   max-width: 92%;
 }
 
-/* Responsividade fina para telefones pequenos */
+/* Responsividade fina */
 @media (max-width: 420px) {
   .container { padding: 12px; }
   h1 { font-size: 1.05rem; margin-bottom: 10px; }
@@ -154,4 +156,9 @@ h1 {
   .cell { font-size: clamp(0.95rem, 3.6vw, 1.2rem); border-radius: 7px; }
   .winner h2 { font-size: 0.95rem; }
   .winner button { padding: 8px 16px; font-size: 0.75rem; }
+}
+
+/* Fundo retrô */
+body {
+  background: radial-gradient(circle, #1B0033 0%, #0f001a 100%);
 }
