@@ -1,0 +1,151 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif; /* Fonte legível */
+}
+
+/* Container principal */
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  background: radial-gradient(circle at top, #1B0033, #0f001a);
+  color: #B8FF5E;
+  text-align: center;
+}
+
+/* Títulos */
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #6cff5e;
+}
+
+/* Mensagens do bot ou instruções */
+.bot-message, p {
+  background-color: rgba(94, 255, 178, 0.1);
+  color: #B8FF5E;
+  padding: 12px 15px;
+  border: 2px solid #5B2EFF;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  min-width: 250px;
+}
+
+/* Seleção de nível */
+.level-selector {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.level-selector label {
+  margin-bottom: 5px;
+  font-size: 1rem;
+  color: #5EFFB2;
+}
+
+.level-selector select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid #5B2EFF;
+  background: #1B0033;
+  color: #B8FF5E;
+  cursor: pointer;
+}
+
+/* Tabuleiro Jogo da Velha */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 80px);
+  grid-template-rows: repeat(3, 80px);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: 2px solid #5B2EFF;
+  border-radius: 10px;
+  background: #0f001a;
+  transition: transform 0.1s, background 0.2s;
+  color: #00e239;
+}
+
+.cell:hover {
+  transform: scale(1.1);
+  background: #05a005;
+}
+
+/* Input e botões */
+input[type="number"] {
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid #5B2EFF;
+  background: #1B0033;
+  color: #B8FF5E;
+  width: 150px;
+  margin-right: 10px;
+  text-align: center;
+}
+
+button {
+  padding: 10px 20px;
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  background: #1B0033;
+  color: #B8FF5E;
+  border: 2px solid #5EFFB2;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: #5EFFB2;
+  color: #1B0033;
+}
+
+/* Mensagem de vitória/empate */
+.winner {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.winner h2 {
+  font-size: 1.2rem;
+  color: #5B2EFF;
+  margin-bottom: 10px;
+}
+
+/* Responsivo */
+@media (max-width: 500px) {
+  .board {
+    grid-template-columns: repeat(3, 60px);
+    grid-template-rows: repeat(3, 60px);
+    gap: 8px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  .cell {
+    font-size: 1.5rem;
+  }
+
+  input[type="number"] {
+    width: 120px;
+  }
+}
