@@ -6,13 +6,14 @@
   font-family: 'Press Start 2P', cursive; /* Fonte retrô estilo arcade */
 }
 
-/* Container principal */
+/* Container principal
+   -> agora centraliza vertical e horizontalmente por padrão */
 .container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: center;      /* centraliza horizontal */
+  justify-content: center;  /* centraliza vertical (troque para flex-start se preferir topo) */
   padding: 20px;
   background: radial-gradient(circle at top, #1B0033, #0f001a);
   color: #740000;
@@ -21,35 +22,42 @@
 /* Título */
 h1 {
   font-size: 1.5rem;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   color: #6cff5e;
   text-align: center;
 }
 
-/* Mensagem do bot */
+/* Mensagem do bot
+   -> largura fluida para não empurrar o layout */
 .bot-message {
-  background-color: rgba(94, 255, 178, 0.1);
+  background-color: rgba(94, 255, 178, 0.08);
   color: #B8FF5E;
-  padding: 10px 15px;
+  padding: 10px 14px;
   border: 2px solid #5B2EFF;
   border-radius: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   text-align: center;
-  min-width: 250px;
+  width: min(420px, 94%);   /* fica responsivo e centralizado */
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 /* Seleção de nível */
 .level-selector {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  max-width: 420px;
 }
 
 .level-selector label {
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   font-size: 0.8rem;
   color: #5EFFB2;
+  align-self: flex-start;
+  margin-left: 6px;
 }
 
 .level-selector select {
@@ -60,42 +68,42 @@ h1 {
   color: #B8FF5E;
   font-family: 'Press Start 2P', cursive;
   cursor: pointer;
+  width: 100%;
+  max-width: 320px;
 }
 
-/* Tabuleiro */
+/* Tabuleiro
+   -> usa largura fluida, colunas fr para manter quadrado via aspect-ratio */
 .board {
   display: grid;
-  grid-template-columns: repeat(3, 80px);
-  grid-template-rows: repeat(3, 80px);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-bottom: 20px;
+  width: min(360px, 94vw);   /* controla tamanho do tabuleiro na tela */
+  max-width: 100%;
+  margin-bottom: 16px;
 }
 
-@media (max-width: 500px) {
-  .board {
-    grid-template-columns: repeat(3, 60px);
-    grid-template-rows: repeat(3, 60px);
-    gap: 8px;
-  }
-}
-
-/* Cada célula */
+/* Cada célula
+   -> aspect-ratio garante quadrado; font-size escalável */
 .cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  aspect-ratio: 1 / 1;               /* mantém quadrado */
+  font-size: clamp(1rem, 2.6vw, 1.6rem); /* escalável em telas pequenas/grandes */
   font-weight: bold;
   cursor: pointer;
   border: 2px solid #5B2EFF;
   border-radius: 8px;
   background: #0f001a;
-  transition: transform 0.1s, background 0.2s;
+  transition: transform 0.1s, background 0.12s;
   color: #00e239;
+  user-select: none;
 }
 
-.cell:hover {
-  transform: scale(1.1);
+/* toque/press */
+.cell:active {
+  transform: scale(0.98);
   background: #05a005;
 }
 
@@ -119,7 +127,7 @@ h1 {
   border: 2px solid #5EFFB2;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.12s;
 }
 
 .winner button:hover {
@@ -127,7 +135,23 @@ h1 {
   color: #1B0033;
 }
 
-/* Pequenos detalhes retrô */
-body {
-  background: radial-gradient(circle, #1B0033 0%, #0f001a 100%);
+/* texto auxiliar */
+.unlock-text {
+  color: #9c27b0;
+  margin-top: 12px;
+  font-size: 0.8rem;
+  text-align: center;
+  max-width: 92%;
+}
+
+/* Responsividade fina para telefones pequenos */
+@media (max-width: 420px) {
+  .container { padding: 12px; }
+  h1 { font-size: 1.05rem; margin-bottom: 10px; }
+  .bot-message { font-size: 0.82rem; padding: 8px 10px; }
+  .level-selector select { font-size: 0.72rem; padding: 7px 8px; max-width: 100%; }
+  .board { gap: 8px; width: min(320px, 94vw); }
+  .cell { font-size: clamp(0.95rem, 3.6vw, 1.2rem); border-radius: 7px; }
+  .winner h2 { font-size: 0.95rem; }
+  .winner button { padding: 8px 16px; font-size: 0.75rem; }
 }
